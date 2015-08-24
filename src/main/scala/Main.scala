@@ -17,18 +17,17 @@ import scala.util.Try
 import scala.util.parsing.json.JSON
 
 object Main extends App {
-  val token = Try(args(0)).getOrElse {
-    println("Usage: program token [message]\ntoken is required"); System.exit(1); ""
+  val url = Try(args(0)).getOrElse {
+    println("Usage: program url [message]\nurl is required"); System.exit(1); ""
   }
   val message = Try(args(1)).toOption
-  bicycle.send(token, message)
+  bicycle.send(url, message)
 }
 
 object bicycle {
-  def send(tokenArg: String, message: Option[String]) = {
+  def send(urlArg: String, message: Option[String]) = {
     val host = "db3.notify.windows.com"
-    val urlToken = tokenArg
-    val subscriptionUrl = "https://db3.notify.windows.com/?token=" + URLEncoder.encode(urlToken, "UTF8") //Windows phone app will give you that url
+    val subscriptionUrl = urlArg //Windows phone app will give you that url
     println(s"Channel url is $subscriptionUrl")
     val accessTokenHost = "login.live.com"
     val accessTokenUrl = "https://login.live.com/accesstoken.srf"
