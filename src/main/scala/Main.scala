@@ -17,7 +17,9 @@ import scala.util.Try
 import scala.util.parsing.json.JSON
 
 object Main extends App {
-  val token = Try(args(0)).getOrElse{println("Usage: program token [message]\ntoken is required"); System.exit(1); ""}
+  val token = Try(args(0)).getOrElse {
+    println("Usage: program token [message]\ntoken is required"); System.exit(1); ""
+  }
   val message = Try(args(1)).toOption
   bicycle.send(token, message)
 }
@@ -28,15 +30,14 @@ object bicycle {
     val urlToken = tokenArg
     val subscriptionUrl = "https://db3.notify.windows.com/?token=" + URLEncoder.encode(urlToken, "UTF8") //Windows phone app will give you that url
     println(s"Channel url is $subscriptionUrl")
-    val accesstokenHost = "login.live.com"
-    val accesstokenUrl = "https://login.live.com/accesstoken.srf"
-    val rawSecret = "BLABLABLA" //Looks like Op+g1dr/NDcGne4kWwizMrz2qBnmlsFHCb
-    val clientSecret = URLEncoder.encode("", "UTF8")
-    val rawSid = "ms-app://BLABLABLA" //Looks like ms-app://s-2-16-5-278192332-5453453411-55767567657-2321312-43434243-4343432-434343443
+    val accessTokenHost = "login.live.com"
+    val accessTokenUrl = "https://login.live.com/accesstoken.srf"
+    val rawSecret: String = ??? //Looks like Op+g1dr/NDcGne4kWwizMrz2qBnmlsFHCb
+    val clientSecret = URLEncoder.encode(rawSecret, "UTF8")
+    val rawSid: String = ??? //Looks like ms-app://s-2-16-5-278192332-5453453411-55767567657-2321312-43434243-4343432-434343443
     val sid = URLEncoder.encode(rawSid, "UTF8")
 
-    def clientService: Service[HttpRequest, HttpResponse] =
-    {
+    def clientService: Service[HttpRequest, HttpResponse] = {
       ClientBuilder()
         .hosts(new InetSocketAddress(host, 443))
         .codec(Http())
@@ -46,14 +47,13 @@ object bicycle {
         .build()
     }
 
-    def accessTokeService: Service[HttpRequest, HttpResponse] =
-    {
+    def accessTokeService: Service[HttpRequest, HttpResponse] = {
       ClientBuilder()
-        .hosts(new InetSocketAddress(accesstokenHost, 443))
+        .hosts(new InetSocketAddress(accessTokenHost, 443))
         .codec(Http())
         .tcpConnectTimeout(3.seconds)
         .hostConnectionLimit(3)
-        .tls(accesstokenHost)
+        .tls(accessTokenHost)
         .build()
     }
 
@@ -62,7 +62,7 @@ object bicycle {
       s"client_secret=$clientSecret&" +
       s"client_id=$sid").getBytes(Charset.defaultCharset())
 
-    val accessTokenReq = RequestBuilder().url(accesstokenUrl).addHeader("Content-Type", "application/x-www-form-urlencoded")
+    val accessTokenReq = RequestBuilder().url(accessTokenUrl).addHeader("Content-Type", "application/x-www-form-urlencoded")
       .buildPost(wrappedBuffer(tokenMsg))
 
     println(s"\n\nFormed accessTokenReq\n$accessTokenReq\n\n")
