@@ -20,20 +20,27 @@ object Main extends App {
   val url = Try(args(0)).getOrElse {
     println("Usage: program url [message]\nurl is required"); System.exit(1); ""
   }
-  val message = Try(args(1)).toOption
-  bicycle.send(url, message)
+
+  val message =  Try {
+    val fname = args(1)
+    io.Source.fromFile(fname).mkString("")
+  }.getOrElse(throw new Exception(s"Filename isn't specified or incorrect"))
+
+  println(s"Message is \n $message")
+
+  WNS.send(url, message)
 }
 
-object bicycle {
-  def send(urlArg: String, message: Option[String]) = {
+object WNS {
+  def send(urlArg: String, message: String) = {
     val host = "db3.notify.windows.com"
     val subscriptionUrl = urlArg //Windows phone app will give you that url
     println(s"Channel url is $subscriptionUrl")
     val accessTokenHost = "login.live.com"
     val accessTokenUrl = "https://login.live.com/accesstoken.srf"
-    val rawSecret: String = ??? //Looks like Op+g1dr/NDcGne4kWwizMrz2qBnmlsFHCb
+    val rawSecret: String = "" //Looks like Op+g1dr/NDcGne4kWwizMrz2qBnmlsFHCb
     val clientSecret = URLEncoder.encode(rawSecret, "UTF8")
-    val rawSid: String = ??? //Looks like ms-app://s-2-16-5-278192332-5453453411-55767567657-2321312-43434243-4343432-434343443
+    val rawSid: String = "" //Looks like ms-app://s-2-16-5-278192332-5453453411-55767567657-2321312-43434243-4343432-434343443
     val sid = URLEncoder.encode(rawSid, "UTF8")
 
     def clientService: Service[HttpRequest, HttpResponse] = {
@@ -81,14 +88,7 @@ object bicycle {
     val token = scala.concurrent.Await.result(tokenP.future, FiniteDuration(10, scala.concurrent.duration.SECONDS))
     println(s"\n\nGot token \n$token\n\n")
 
-    val msg = ("<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-      "<wp:Notification xmlns:wp=\"WPNotification\">" +
-      "<wp:Toast>" +
-      "<wp:Text1>" + message.getOrElse("Self destruction in 3... 2... BSOD") + "</wp:Text1>" +
-      "<wp:Text2>" + "text2" + "</wp:Text2>" +
-      "<wp:Param>/Page2.xaml?NavigatedFrom=Toast Notification</wp:Param>" +
-      "</wp:Toast> " +
-      "</wp:Notification>").getBytes(Charset.defaultCharset())
+    val msg = message.getBytes(Charset.defaultCharset())
 
     val req = RequestBuilder().url(subscriptionUrl)
       .setHeader("Content-Type", "text/xml")
@@ -105,5 +105,7 @@ object bicycle {
     }.onFailure { t =>
       println("Failure " + t.getMessage)
     }, 20.seconds)
+
+    System.exit(0)
   }
 }
