@@ -26,13 +26,15 @@ object Main extends App {
     io.Source.fromFile(fname).mkString("")
   }.getOrElse(throw new Exception(s"Filename isn't specified or incorrect"))
 
+  val wnsType = Try(args(2)).getOrElse("wns/toast")
+
   println(s"Message is \n $message")
 
-  WNS.send(url, message)
+  WNS.send(url, message, wnsType)
 }
 
 object WNS {
-  def send(urlArg: String, message: String) = {
+  def send(urlArg: String, message: String, wnsType: String) = {
     val host = "db3.notify.windows.com"
     val subscriptionUrl = urlArg //Windows phone app will give you that url
     println(s"Channel url is $subscriptionUrl")
@@ -94,7 +96,7 @@ object WNS {
       .setHeader("Content-Type", "text/xml")
       .setHeader("X-MessageID", UUID.randomUUID().toString)
       .setHeader("X-NotificationClass", "2")
-      .setHeader("X-WNS-Type", "wns/toast")
+      .setHeader("X-WNS-Type", wnsType)
       .setHeader("Content-Length", msg.length.toString)
       .setHeader("Authorization", "Bearer " + token)
       .buildPost(wrappedBuffer(msg))
